@@ -1,10 +1,9 @@
 Summary
 -------
 
-MongoDB server image. It extend the official [mongo](https://hub.docker.com/_/mongo/) 
-image in the way that it setup authorization if an administrator password is
-given when running the image. For persistent storage, you could use the 
-cburki/volume-data container to store the database data.
+MongoDB server image. It extend the official [mongo](https://hub.docker.com/_/mongo/)
+image in the way that it setup authorization for a given administrator. For persistent
+storage, you could use the cburki/volume-data container to store the database data.
 
 This image can also be used to execute a mongo shell to connect to a
 server.
@@ -23,10 +22,14 @@ Configure the image
 -------------------
 
 Access control is disabled by default. Yo can enable it by providing a user
-administrator password to the following environment variable. The administrator
-username is *admin*.
+administrator username, password and role to the following environment variables.
 
-    - MONGODB_ADMIN_PASSWORD : Administrator password for authorization.
+    - MONGODB_ADMIN_PASSWORD : Password for the administrator
+    - MONGODB_ADMIN_USERNAME : Username for the administrator (default to admin)
+    - MONGODB_ADMIN_ROLE : The role to set the administrator (default to userAdminAnyDatabase)
+
+The username is set to *admin* if not set to the variable *MONGODB_ADMIN_USERNAME*.
+The role is set to *userAdminAnyDatabase* if the *MONGODB_ADMIN_ROLE* variable is not set.
 
 
 Run the image
@@ -39,7 +42,9 @@ variable to setup authorization.
         --name mongodb \
         --volumes-from mongodb-data \
         -d \
+        -e MONGODB_ADMIN_USERNAME=my_admin_username \
         -e MONGODB_ADMIN_PASSWORD=my_secret_password \
+        -e MONGODB_ADMIN_ROLE=a_valid_mongodb_role \
         -p 27017:27017 \
         cburki/mongodb:latest
 

@@ -4,15 +4,22 @@ SETUP_STATUS=/opt/setupmongo.status
 
 if [ ! -f ${SETUP_STATUS} ]; then
 
-    if [ -n "$MONGODB_ADMIN_PASSWORD" ]; then
+    if [ -n "${MONGODB_ADMIN_PASSWORD}" ]; then
 
-        PIDFILE=/tmp/mongo.pid
+        USERNAME=admin
+        ROLE=userAdminAnyDatabase
+        if [ -n "${MONGODB_ADMIN_USERNAME}" ]; then
+            USERNAME=${MONGODB_ADMIN_USERNAME}
+        fi
+        if [ -n "${MONGODB_ADMIN_ROLE}" ]; then
+            ROLE=${MONGODB_ADMIN_ROLE}
+        fi
  
         # Start mongod without access control
-        gosu mongodb mongod --port 27017 --dbpath /data/db --pidfilepath ${PIDFILE} --syslog --fork
+        gosu mongodb mongod --port 27017 --dbpath /data/db --syslog --fork
 
-        # Setup authorization
-        echo "db.createUser({user: \"admin\", pwd: \"${MONGODB_ADMIN_PASSWORD}\", roles: [{role: \"userAdminAnyDatabase\", db: \"admin\"}]})" >> /tmp/create_admin.js
+        # Create the adminstrator user and authorization
+        echo "db.createUser({user: \"${USERNAME}\", pwd: \"${MONGODB_ADMIN_PASSWORD}\", roles: [{role: \"${ROLE}\", db: \"admin\"}]})" >> /tmp/create_admin.js
         mongo --port 27017 admin /tmp/create_admin.js
 
         # Shutdown mongod
