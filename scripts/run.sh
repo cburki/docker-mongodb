@@ -4,6 +4,10 @@ SETUP_STATUS=/opt/setupmongo.status
 
 if [ ! -f ${SETUP_STATUS} ]; then
 
+    # Create data folders and set permissions
+    mkdir -p /data/db /data/configdb
+    chown mongodb: /data/db /data/configdb
+
     if [ -n "${MONGODB_ADMIN_PASSWORD}" ]; then
 
         USERNAME=admin
@@ -14,7 +18,7 @@ if [ ! -f ${SETUP_STATUS} ]; then
         if [ -n "${MONGODB_ADMIN_ROLE}" ]; then
             ROLE=${MONGODB_ADMIN_ROLE}
         fi
- 
+
         # Start mongod without access control
         gosu mongodb mongod --port 27017 --dbpath /data/db --syslog --fork
 
